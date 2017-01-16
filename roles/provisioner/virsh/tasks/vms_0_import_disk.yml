@@ -2,11 +2,27 @@
 - name: import vm disk image(s) for node if specified
   get_url:
       url: "{{ item.value.import_url }}"
-      dest: "{{ base_image_path }}/{{ node.value.name }}-{{ item.key }}.qcow2"
+      dest: "{{ base_image_path }}/{{ node.value.name }}-0-{{ item.key }}.qcow2"
       timeout: 30
   register: result
   until: result.msg.find("Request failed") == -1
   retries: 5
   delay: 5
+  when: item.value.import_url is defined and item.value.import_url
+  with_dict: "{{ node.value.disks }}"
+
+- name: adjust base image for this run
+  shell: |
+      set -ex
+      export LIBGUESTFS_BACKEND=direct
+
+      virt-customize -a {{ base_image_path }}/{{ node.value.name }}-0-{{ item.key }}.qcow2 \
+          --run-command 'echo "UseDNS no" >> /etc/ssh/sshd_config' \
+          --mkdir /root/.ssh \
+          --chmod 0700:/root/.ssh \
+          --upload /root/.ssh/id_rsa.pub:/root/.ssh/authorized_keys \
+          --delete /etc/dhcp/dhclient.conf \
+          --selinux-relabel
+      chown qemu:qemu {{ base_image_path }}/{{ node.value.name }}-0-{{ item.key }}.qcow2
   when: item.value.import_url is defined and item.value.import_url
   with_dict: "{{ node.value.disks }}"

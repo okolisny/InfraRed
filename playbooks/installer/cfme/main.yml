@@ -1,0 +1,19 @@
+---
+- name: Setup CloufForms Management Engine
+  hosts: cfme
+  gather_facts: no
+  tasks:
+      - name: "Configuring the appliance console"
+        shell: "appliance_console_cli --verbose --internal --dbname vmdb_production --region 1 --username root --password smartvm"
+
+      - name: "Starting EVM"
+        shell: "exec rake evm:start"
+        args:
+          chdir: "/var/www/miq/vmdb/bin/"
+
+      - name: "Waiting for EVM service to be ready"
+        wait_for:
+            port: 443
+            host: "{{ ansible_ssh_host }}"
+            delay: 10
+        delegate_to: "virthost"
