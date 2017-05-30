@@ -2,7 +2,7 @@ name: "cfme"
 prefix: null
 amount: "1"
 cpu: "2"
-memory: "8192"
+memory: "12228"
 os:
     type: "linux"
     variant: "rhel7"
