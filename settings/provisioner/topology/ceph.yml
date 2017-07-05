@@ -19,7 +19,7 @@ disks:
         <<: *disk1
         import_url: null
         dev: /dev/vdb
-        size: "40G"
+        size: "80G"
         cache: "unsafe"
         preallocation: "metadata"
 interfaces:
