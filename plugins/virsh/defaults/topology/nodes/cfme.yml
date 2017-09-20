@@ -1,27 +1,26 @@
-name: "cfme"
+name: cfme
 prefix: null
-amount: "1"
 cpu: "2"
+cpumodel: "host-model"
 memory: "18432"
+swap: "0"
 os:
     type: "linux"
     variant: "rhel7"
 disks:
-    disk1: &disk1
+    disk1:
         import_url: null
         path: "/var/lib/libvirt/images"
         dev: "/dev/vda"
         size: "40G"
-        cache: "default"
+        cache: "unsafe"
         preallocation: "metadata"
 interfaces:
-    nic1:
-        network: "management"
-    nic2:
-        network: "data"
-    nic3:
-        network: "external"
-external_network: management
+    - network: "data"
+    - &external
+        network: management
+    - network: "external"
+external_network: *external
 
 groups:
     - cloudforms
