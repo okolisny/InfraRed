@@ -45,4 +45,20 @@
           --upload /root/.ssh/id_rsa.pub:/root/.ssh/authorized_keys \
           --selinux-relabel
   with_items: "{{ download_image_result.results }}"
-  when: item|changed
+  when: item|changed and item.value.import_url is not defined
+
+- name: adjust base image for this run [2]
+  shell: |
+      set -ex
+      export LIBGUESTFS_BACKEND=direct
+
+      virt-customize -a {{ base_image_path }}/{{ node.value.name }}-0-{{ item.key }}.qcow2 \
+          --run-command 'echo "UseDNS no" >> /etc/ssh/sshd_config' \
+          --mkdir /root/.ssh \
+          --chmod 0700:/root/.ssh \
+          --upload /root/.ssh/id_rsa.pub:/root/.ssh/authorized_keys \
+          --delete /etc/dhcp/dhclient.conf \
+          --selinux-relabel
+      chown qemu:qemu {{ base_image_path }}/{{ node.value.name }}-0-{{ item.key }}.qcow2
+  when: item.value.import_url is defined and item.value.import_url
+  with_dict: "{{ node.value.disks }}"
