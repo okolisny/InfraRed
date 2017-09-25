@@ -1,0 +1,63 @@
+---
+- name: Fetch config resource files
+  hosts: undercloud
+  gather_facts: no
+  tasks:
+
+      - name: "Fetch instackenv file"
+        fetch:
+          src: /home/stack/instackenv.json
+          dest: "{{ inventory_dir }}/instackenv.json"
+          flat: yes
+
+      - name: "Get undercloud admin password"
+        shell: "sudo hiera admin_password > uc_pwd"
+
+      - name: "Fetch undercloud admin password"
+        fetch:
+          src: /home/stack/uc_pwd
+          dest: "{{ inventory_dir }}/uc_pwd"
+          flat: yes
+
+      - name: "Create public network if needed"
+        shell: |
+                source ~/overcloudrc
+                neutron net-delete nova || echo "Ok."
+                neutron net-delete public || echo "Ok."
+                neutron net-create public --provider:network_type vlan --router:external || echo "Ok."
+                neutron subnet-create --name external_subnet --enable_dhcp=False  --allocation-pool=start=172.16.23.140,end=172.16.23.240  --gateway=172.16.23.251 public 172.16.23.128/25 || echo "Ok."
+      - name: "Create private network and subnet"
+        shell: |
+                source ~/overcloudrc
+                neutron net-create private
+                neutron subnet-create private 192.168.0.0/24 --name private-subnet --gateway 192.168.0.1
+
+      - name: "Create router and add interfaces"
+        shell: |
+                source ~/overcloudrc
+                neutron router-create router
+                neutron router-interface-add router private-subnet
+                neutron router-gateway-set router public
+      - name: "Allocate floating IP"
+        shell: source ~/overcloudrc; nova floating-ip-create public
+
+      - name: "Download and add CirrOS image"
+        shell: |
+                sudo wget -q http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+                source ~/overcloudrc
+                openstack image create cirros --disk-format qcow2 --container-format bare --file cirros-0.3.5-x86_64-disk.img
+
+      - name: "Create minimal flavor"
+        shell: source ~/overcloudrc; openstack flavor create --vcpus 1 --disk 1 --ram 256 m1.tiny
+        ignore_errors: yes
+
+      - name: "Create 100 tenants"
+        shell: |
+           source ~/overcloudrc
+           for i in {0..99}
+           do
+           NAME="tenant-"$RANDOM
+           openstack project create $NAME
+           openstack role add --project $NAME --user $OS_USERNAME admin
+           sleep 5
+           done
