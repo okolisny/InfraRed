@@ -16,10 +16,8 @@ disks:
         cache: "unsafe"
         preallocation: "metadata"
 interfaces:
-    - network: "data"
     - &external
         network: external
-    - network: "management"
 external_network: *external
 
 groups:
