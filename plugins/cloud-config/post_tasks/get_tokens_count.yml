@@ -1,0 +1,13 @@
+---
+- name: Get count of keystone tokens for cloudforms user
+  hosts: controller-0
+  gather_facts: no
+  tasks:
+      - name: "Get tokens and write to the file"
+        shell: sudo mysql keystone -e 'select count(token.id) as count,name from token,local_user where token.user_id=local_user.user_id  group by name order by count desc;' | awk '{ if (NR == 2) { print $1 }}' > tokens
+
+      - name: "Fetch instackenv file"
+        fetch:
+          src: /home/heat-admin/tokens
+          dest: "{{ inventory_dir }}/tokens"
+          flat: yes
