@@ -18,8 +18,8 @@ disks:
 interfaces:
     - network: "data"
     - &external
-        network: management
-    - network: "external"
+        network: external
+    - network: "management"
 external_network: *external
 
 groups:
