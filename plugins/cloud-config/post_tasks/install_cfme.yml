@@ -16,4 +16,4 @@
             port: 443
             host: "{{ ansible_ssh_host }}"
             delay: 10
-        delegate_to: "virthost"
+        delegate_to: "hypervisor"
