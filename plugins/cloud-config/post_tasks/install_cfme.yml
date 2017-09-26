@@ -1,5 +1,5 @@
 ---
-- name: Setup CloufForms Management Engine
+- name: Setup CloudForms Management Engine
   hosts: cfme
   gather_facts: no
   tasks:
