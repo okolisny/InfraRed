@@ -44,3 +44,15 @@
 - name: Configure instance high-availability
   include: post_tasks/instance-ha.yml
   when: '"instance-ha" in install.tasks'
+
+- name: Include task "Install CFME"
+  include: post_tasks/install_cfme.yml
+  when: '"install_cfme" in install.tasks'
+
+- name: Include task "Post-deployment script"
+  include: post_tasks/post_deployment.yml
+  when: '"post_deployment" in install.tasks'
+
+- name: Include task "Get keystone tokens count"
+  include: post_tasks/get_tokens_count.yml
+  when: '"get_tokens_count" in install.tasks'
