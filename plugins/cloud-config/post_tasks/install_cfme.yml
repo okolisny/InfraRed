@@ -4,11 +4,9 @@
   gather_facts: no
   tasks:
       - name: "Configuring the appliance console"
-        become: sudo
         shell: "appliance_console_cli --verbose --internal --dbname vmdb_production --region 1 --username root --password smartvm"
 
       - name: "Starting EVM"
-        become: sudo
         shell: "exec rake evm:start"
         args:
           chdir: "/var/www/miq/vmdb/bin/"
